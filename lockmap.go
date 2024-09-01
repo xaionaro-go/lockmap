@@ -37,6 +37,9 @@ func NewLockMap() *LockMap {
 func (m *LockMap) Lock(ctx context.Context, key any) *Unlocker {
 	unlocker, waiter := m.LockAsync(ctx, key)
 	<-waiter.C
+	if !unlocker.IsLocked() {
+		return nil
+	}
 	return unlocker
 }
 
