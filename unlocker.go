@@ -83,5 +83,7 @@ func (u *Unlocker) refCountDec() {
 
 	u.m.globalLock.Lock()
 	defer u.m.globalLock.Unlock()
-	delete(u.m.lockMap, u.key)
+	if atomic.LoadInt64(&u.refCount) == 0 {
+		delete(u.m.lockMap, u.key)
+	}
 }
