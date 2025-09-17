@@ -20,7 +20,7 @@ lm := lockmap.New()
     ctx := context.Background()
 
     unlocker := lm.Lock(ctx, "key1")
-    defer unlocker.Unlock(ctx, "key1")
+    defer unlocker.Unlock()
 
     // do something with key1
 ```
@@ -35,7 +35,12 @@ lm := lockmap.New()
     defer cancelFn()
 
     unlocker, waiter := lm.LockAsync(ctx, "key1")
-    defer unlocker.Unlock("key1")
+    defer func(){
+        <-waiter.C
+        if unlocker.IsLocked() {
+            unlocker.Unlock()
+        }
+    }()
 
     select {
     case <-waiter.C:
@@ -45,6 +50,7 @@ lm := lockmap.New()
         }
         // do something with key1
     case <-someOtherChan:
+        cancelFn()
         // do something else
     }
 ```
